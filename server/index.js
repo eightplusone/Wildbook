@@ -162,37 +162,114 @@ router.route('/users/:username/posts')
 
 
 // Add a new post
+/*
 router.route('/users/:username/posts')
   .post(function(req, res) {
     Post.sequelize.transaction().then(function(t) {
-      Post.create(
-        {
+      Post.create({
           username: req.params.username,
           location_id: req.body.location_id,
           timestamp: Sequelize.fn('NOW'),
           text: req.body.text
-        }
-      ).then(function() {
+      }).then(function() {
         t.commit();
       }).catch(function(err) {
         res.send(err);
         t.rollback();
       })
     });
-
-    /*
-    var post = new Post();
-    post.username = req.params.username;
-    post.location_id = req.body.location_id;
-    post.timestamp = Sequelize.fn('NOW');
-
-    post.save(function(err) {
-      if (err) return(res.send(err));
-      res.json({ message: 'New user created!' });
-    });
-    */ 
   })
+*/
 
+var fs = require('fs');
+var multer = require('multer');
+
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  params: { Bucket: 'wildbook' }
+});
+
+var multerS3 = require('multer-s3');
+
+
+// Problem of AWS S3: metadata has to be in ASCII.
+// It means any metadata of a photo will be removed.
+var upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'wildbook/images',
+    acl: 'public-read',
+    /*metadata: function(req, file, cb) {
+      cb(null, { fieldName: file.fieldName });
+    },*/
+    key: function(req, file, cb) {
+      var fileExtension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity));
+      //cb(null, Date.now().toString())
+      //cb(null, file.originalname);
+      cb(null, Date.now().toString() + fileExtension);
+    }
+  })
+})
+
+router.route('/users/:username/posts')
+  .post(upload.single('imagefile'), function(req, res) {
+    var imageId = 0;
+    var postId = 0;
+
+    console.log("Req body", req.body);
+    
+    // Save image
+    Image.sequelize.transaction().then(function(t) {
+      Image.create({
+          url: req.file.location,
+          timestamp: Sequelize.fn('NOW'),
+          lat: 1,
+          long: 1,
+          username: req.params.username,
+          is_uploaded_to_ibeis: 'true'
+      }).then(function(obj) {
+        imageId = obj.id;
+        t.commit();
+
+        // Save post
+        Post.sequelize.transaction().then(function(t) {
+          Post.create({
+              username: req.params.username,
+              location_id: 1,
+              timestamp: Sequelize.fn('NOW'),
+              text: 'req.body.text'
+          }).then(function(obj) {
+            postId = obj.id;
+            t.commit();
+
+            // Update image in post
+            ImageInPost.sequelize.transaction().then(function(t) {
+              ImageInPost.create({
+                image_id: imageId,
+                post_id: postId
+              }).then(function() {
+                t.commit();
+              }).catch(function(err) {
+                t.rollback();
+                console.log(err);
+              })
+            })
+
+          }).catch(function(err) {
+            t.rollback();
+            console.log(err);
+          })
+        });
+
+      }).catch(function(err) {
+        t.rollback();
+        console.log(err);
+      })
+    })
+
+    
+  })
 
 // Get all locations of a user
 router.route('/users/:username/locations')

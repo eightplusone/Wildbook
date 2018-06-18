@@ -6,6 +6,7 @@ var Image = db.database.define(
   {
     id: { 
       type: Sequelize.INTEGER, 
+      autoIncrement: true,
       primaryKey: true 
     },
     url: {
