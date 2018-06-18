@@ -4,9 +4,42 @@
 // ====================
 // BASE SETUP
 // ====================
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
+var fs = require('fs');
+var express = require('express');
+var app = express();
+var bodyParser = require('body-parser');
+
+// AWS and S3
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  params: { Bucket: 'wildbook' }
+});
+
+// Multer
+var multer = require('multer');
+var multerS3 = require('multer-s3');
+
+// Assign an S3 bucket to multer.
+// Problem of AWS S3: metadata has to be in ASCII.
+// It means any metadata of a photo will be removed.
+var upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'wildbook/images',
+    acl: 'public-read',
+    /*metadata: function(req, file, cb) {
+      cb(null, { fieldName: file.fieldName });
+    },*/
+    key: function(req, file, cb) {
+      var fileExtension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity));
+      //cb(null, Date.now().toString())
+      //cb(null, file.originalname);
+      cb(null, Date.now().toString() + fileExtension);
+    }
+  })
+})
+
 var swaggerJSDoc = require('swagger-jsdoc');
 //var swaggerUI = require('swagger-ui-express'),
 //    swaggerDocument = require('./swagger.json');
@@ -16,7 +49,7 @@ var swaggerJSDoc = require('swagger-jsdoc');
 app.use(bodyParser.urlencoded({ extended:true }));
 app.use(bodyParser.json());
 
-const port = process.env.PORT || 3000;
+var port = process.env.PORT || 3000;
 
 /*
 var swaggerDefinition = {
@@ -162,62 +195,18 @@ router.route('/users/:username/posts')
 
 
 // Add a new post
-/*
-router.route('/users/:username/posts')
-  .post(function(req, res) {
-    Post.sequelize.transaction().then(function(t) {
-      Post.create({
-          username: req.params.username,
-          location_id: req.body.location_id,
-          timestamp: Sequelize.fn('NOW'),
-          text: req.body.text
-      }).then(function() {
-        t.commit();
-      }).catch(function(err) {
-        res.send(err);
-        t.rollback();
-      })
-    });
-  })
-*/
-
-var fs = require('fs');
-var multer = require('multer');
-
-var AWS = require('aws-sdk');
-var s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  params: { Bucket: 'wildbook' }
-});
-
-var multerS3 = require('multer-s3');
-
-
-// Problem of AWS S3: metadata has to be in ASCII.
-// It means any metadata of a photo will be removed.
-var upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'wildbook/images',
-    acl: 'public-read',
-    /*metadata: function(req, file, cb) {
-      cb(null, { fieldName: file.fieldName });
-    },*/
-    key: function(req, file, cb) {
-      var fileExtension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity));
-      //cb(null, Date.now().toString())
-      //cb(null, file.originalname);
-      cb(null, Date.now().toString() + fileExtension);
-    }
-  })
-})
-
 router.route('/users/:username/posts')
   .post(upload.single('imagefile'), function(req, res) {
     var imageId = 0;
     var postId = 0;
 
     console.log("Req body", req.body);
+    
+    // For some reason, I could not retrieve imageId 
+    // and postId with three independent save queries
+    // (probably because of asynchronicity). Thus, I
+    // nested the three queries below to pass values
+    // more easily.
     
     // Save image
     Image.sequelize.transaction().then(function(t) {
