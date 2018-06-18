@@ -1,0 +1,36 @@
+import React, { Component } from 'react';
+import {Alert, Button, FlatList, ActivityIndicator,View, Text, StyleSheet, Dimensions} from 'react-native';
+import Camera from 'react-native-camera';
+import MapView from 'react-native-maps';
+import { Header } from 'react-native-elements';
+import Icon from 'react-native-vector-icons';
+import FontAwesome, { Icons } from 'react-native-fontawesome';
+import Fontawesomeicons from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {StackNavigator} from 'react-navigation';
+
+export default class CameraScreen extends Component {
+
+static navigationOptions = ({ navigation }) => ({});//?
+
+  render() {
+    const { navigate } = this.props.navigation;//?
+        return (
+          <View>
+       <Button
+         title="Log In"
+         onPress={()=>this.props.navigation.navigate('signIn')}
+       />
+       <Button
+         title="Sign Up"
+         onPress={()=>this.props.navigation.navigate('signUp')}
+       />
+     </View>
+        );
+  }
+}
+
+const styles = StyleSheet.create({
+    preview: {
+    },
+});
