@@ -166,7 +166,7 @@ router.route('/users/:username')
   });
 
 
-// Update user
+// Update a user
 router.route('/users/:username')
   .put(function(req, res) {
     User.update(
@@ -186,6 +186,19 @@ router.route('/users/:username')
       console.log(result);
     })
   });
+
+
+// Delete a user
+router.route('/users/:username')
+  .delete(function(req, res) {
+    User.destroy({
+      where: { 
+        username: req.params.username
+      }
+    }).then( destroyed => {
+      res.json({ message: 'User deleted!' });
+    })
+  })
 
 
 // Get all posts belong to the user
@@ -535,6 +548,54 @@ router.route('/posts/:id/images')
   });
 
 
+// Add image to a post
+router.route('/posts/:id/images')
+  .post(upload.single('imagefile'), function(req, res) {
+    var imageId = 0;
+    var postId = 0;
+
+    console.warn("Req body", req);
+    
+    // For some reason, I could not retrieve imageId 
+    // and postId with three independent save queries
+    // (probably because of asynchronicity). Thus, I
+    // nested the three queries below to pass values
+    // more easily.
+
+    // Save image
+    Image.sequelize.transaction().then(function(t) {
+      Image.create({
+        url: req.file.location,
+        timestamp: Sequelize.fn('NOW'),
+        lat: req.body.lat,
+        long: req.body.long,
+        username: req.body.username,
+        is_uploaded_to_ibeis: 'true'
+      }).then(function(obj) {
+        imageId = obj.id;
+        t.commit();
+
+        // Update image in post
+        ImageInPost.sequelize.transaction().then(function(t) {
+          ImageInPost.create({
+            image_id: imageId,
+            post_id: req.params.id
+          }).then(function() {
+            t.commit();
+          }).catch(function(err) {
+            t.rollback();
+            console.warn(err);
+          })
+        })
+
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
 // Get all animals appear in a post
 router.route('/posts/:id/animals')
   .get(function(req, res) {
@@ -645,6 +706,19 @@ router.route('/animals/:id')
   }) 
 
 
+// Delete an animal
+router.route('/animals/:id')
+  .delete(function(req, res) {
+    Animal.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Animal deleted!' });
+    })
+  })
+
+
 // Get all locations of an animal
 router.route('/animals/:id/locations')
   .get(function(req, res) {
@@ -689,7 +763,7 @@ router.route('/images')
   });
 
 
-// Get an image by id
+// Get image by id
 router.route('/images/:id')
   .get(function(req, res) {
     Image.findAll({
@@ -703,7 +777,44 @@ router.route('/images/:id')
   });
 
 
-// Get the animal that matches the id
+// Update an image
+router.route('/images/:id')
+  .put(function(req, res) {
+    Image.update(
+      {
+        url: req.body.url,
+        timestamp: req.body.timestamp,
+        lat: req.body.lat,
+        long: req.body.long,
+        location_id: req.body.location_id,
+        username: req.body.username,
+        is_uploaded_to_ibeis: req.body.is_uploaded_to_ibeis
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Image updated!' });
+    })
+  })
+
+
+// Delete an image
+router.route('/images/:id')
+  .delete(function(req, res) {
+    Image.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Image deleted!' });
+    })
+  })
+
+// Get the list of animals appearing in a picture
 router.route('/images/:id/animals')
   .get(function(req, res) {
     AnimalFoundInImage.findAll({
@@ -716,6 +827,38 @@ router.route('/images/:id/animals')
       res.json(out);
    });
   });
+
+
+// Add an animal to an image
+router.route('/images/:id/animals/:animal_id')
+  .post(function(req, res) {
+    AnimalFoundInImage.sequelize.transaction().then(function(t) {
+      AnimalFoundInImage.create({
+        animal_id: req.params.animal_id,
+        image_id: req.params_id
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Animal added to image!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Remove an animal from an image
+router.route('/images/:id/animals/:animal_id')
+  .delete(function(req, res) {
+    AnimalFoundInImage.destroy({
+      where: { 
+        animal_id: req.params.animal_id,
+        image_id: req.params_id
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Animal removed from image!' });
+    })
+  })
 
 
 // --------------------
@@ -732,7 +875,26 @@ router.route('/locations')
   });
 
 
-// Get a specific location
+// Add a location
+router.route('/locations')
+  .post(function(req, res) {
+    Location.sequelize.transaction().then(function(t) {
+      Location.create({
+        name: req.body.name,
+        lat: req.body.lat,
+        long: req.body.long,
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Location added!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Get a location by id
 router.route('/locations/:id')
   .get(function(req, res) {
     Location.findAll({
@@ -744,6 +906,40 @@ router.route('/locations/:id')
       res.json(out);
    });
   });
+
+
+// Update a location
+router.route('/locations/:id')
+  .put(function(req, res) {
+    Location.update(
+      {
+        name: req.body.name,
+        lat: req.body.lat,
+        long: req.body.long
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Location updated!' });
+    })
+  })
+
+
+// Delete an location
+router.route('/locations/:id')
+  .delete(function(req, res) {
+    Location.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Location deleted!' });
+    })
+  })
 
 
 // Get all posts belong to a location
@@ -759,7 +955,6 @@ router.route('/locations/:id/posts')
       res.json(out);
    });
   });
-
 
 
 // =====================
