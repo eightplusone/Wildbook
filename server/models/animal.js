@@ -6,6 +6,7 @@ var Animal = db.database.define(
   {
     id: { 
       type: Sequelize.INTEGER, 
+      autoIncrement: true,
       primaryKey: true 
     },
     name: { 
@@ -18,11 +19,11 @@ var Animal = db.database.define(
     },
     locations: {
       type: Sequelize.ARRAY(Sequelize.INTEGER),
-      allowNull: false
+      allowNull: true
     },
     posts: {
       type: Sequelize.ARRAY(Sequelize.INTEGER),
-      allowNull: false
+      allowNull: true
     }
   },
   {

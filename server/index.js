@@ -93,6 +93,12 @@ var Post = require(process.cwd() + '/models/post');
 var User = require(process.cwd() + '/models/user');
 
 
+// test the homepage of the app (GET http://localhost)
+app.get('/', function(req, res) {
+  res.json({ message:'Hello World!' });
+});
+
+
 // =====================
 // ROUTES FOR OUR API
 // =====================
@@ -101,7 +107,7 @@ const router = express.Router();  // get an instance of the express router
 // middleware to use for all requests
 router.use(function(req, res, next) {
   // do logging
-  console.log('Something is happening.');
+  console.log('API routing...');
   next();  // make sure we go to the next routes and don't stop here
 });
 
@@ -129,16 +135,20 @@ router.route('/users')
 // Add a user
 router.route('/users')
   .post(function(req, res) {
-    var user = new User();
-    user.username = req.body.username;
-    user.password = req.body.password;
-    user.fname = req.body.fname;
-    user.lname = req.body.lname;
-
-    user.save(function(err) {
-      if (err) return(res.send(err));
-      res.json({ message: 'New user created!' });
-    });
+    User.sequelize.transaction().then(function(t) {
+      User.create({
+        username: req.body.username,
+        password: req.body.password,
+        fname: req.body.fname,
+        lname: req.body.lname
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'User created!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
   });
 
 
@@ -156,26 +166,25 @@ router.route('/users/:username')
   });
 
 
-// Modify user information
-router.route('/user/:username')
+// Update user
+router.route('/users/:username')
   .put(function(req, res) {
-    User.findOne({
-      where: {
-        username: req.params.username
+    User.update(
+      {
+        username: req.body.username,
+        password: req.body.password,
+        fname: req.body.fname,
+        lname: req.body.lname
+      }, 
+      {
+        where: {
+          username: req.params.username
+        }
       }
-    }).then( (err, user) => {
+    ).then( (err, result) => {
       if (err) return(res.send(err));
-      
-      user.username = req.body.username;
-      user.password = req.body.password;
-      user.fname = req.body.fname;
-      user.lname = req.body.lname;
-
-      user.save(function(err) {
-        if (err) return(res.send(err));
-        res.json({ message: 'User updated!' })
-      });
-    });
+      console.log(result);
+    })
   });
 
 
@@ -195,28 +204,29 @@ router.route('/users/:username/posts')
 
 
 // Add a new post
+// Assume that this post contains only 1 image
 router.route('/users/:username/posts')
   .post(upload.single('imagefile'), function(req, res) {
     var imageId = 0;
     var postId = 0;
 
-    console.log("Req body", req.body);
+    console.warn("Req body", req);
     
     // For some reason, I could not retrieve imageId 
     // and postId with three independent save queries
     // (probably because of asynchronicity). Thus, I
     // nested the three queries below to pass values
     // more easily.
-    
+
     // Save image
     Image.sequelize.transaction().then(function(t) {
       Image.create({
-          url: req.file.location,
-          timestamp: Sequelize.fn('NOW'),
-          lat: 1,
-          long: 1,
-          username: req.params.username,
-          is_uploaded_to_ibeis: 'true'
+        url: req.file.location,
+        timestamp: Sequelize.fn('NOW'),
+        lat: req.body.lat,
+        long: req.body.long,
+        username: req.params.username,
+        is_uploaded_to_ibeis: 'true'
       }).then(function(obj) {
         imageId = obj.id;
         t.commit();
@@ -224,10 +234,10 @@ router.route('/users/:username/posts')
         // Save post
         Post.sequelize.transaction().then(function(t) {
           Post.create({
-              username: req.params.username,
-              location_id: 1,
-              timestamp: Sequelize.fn('NOW'),
-              text: 'req.body.text'
+            username: req.params.username,
+            location_id: req.body.location_id,
+            timestamp: Sequelize.fn('NOW'),
+            text: req.body.text
           }).then(function(obj) {
             postId = obj.id;
             t.commit();
@@ -241,24 +251,25 @@ router.route('/users/:username/posts')
                 t.commit();
               }).catch(function(err) {
                 t.rollback();
-                console.log(err);
+                console.warn(err);
               })
             })
 
           }).catch(function(err) {
             t.rollback();
-            console.log(err);
+            console.warn(err);
           })
         });
 
       }).catch(function(err) {
         t.rollback();
-        console.log(err);
+        console.warn(err);
       })
     })
 
     
   })
+
 
 // Get all locations of a user
 router.route('/users/:username/locations')
@@ -305,6 +316,100 @@ router.route('/users/:username/followings')
   })
 
 
+// Get all animals that a user is following
+router.route('/users/:username/following_animals')
+  .get(function(req, res) {
+    User.findAll({
+      attributes: ['following_animals'],
+      where: {
+        username: req.params.username
+      }
+    }).then( (err, out) => {
+      if (err) return(res.send(err));
+      res.json(out);
+    });
+  })
+
+
+// Follow an animal
+router.route('/users/:username/following_animals/:animal_id')
+  .post(function(req, res) {
+    FollowAnimal.sequelize.transaction().then(function(t) {
+      FollowAnimal.create({
+        username: req.params.username,
+        animal_id: req.params.animal_id
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Followed!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Unfollow an animal
+router.route('/users/:username/following_animals/:animal_id')
+  .delete(function(req, res) {
+    FollowAnimal.destroy({
+      where: { 
+        animal_id: req.params.animal_id,
+        username: req.params.username
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Unfollowed!' });
+    })
+  })
+
+
+// Get all users that a user is following
+router.route('/users/:username/following_users')
+  .get(function(req, res) {
+    User.findAll({
+      attributes: ['following_users'],
+      where: {
+        username: req.params.username
+      }
+    }).then( (err, out) => {
+      if (err) return(res.send(err));
+      res.json(out);
+    });
+  })
+
+
+// Follow a user
+router.route('/users/:username/following_users/:username2')
+  .post(function(req, res) {
+    FollowUser.sequelize.transaction().then(function(t) {
+      FollowUser.create({
+        follower_id: req.params.username,
+        followee_id: req.params.username2
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Followed!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+ 
+
+// Unfollow a user
+router.route('/users/:username/following_users/:username2')
+  .delete(function(req, res) {
+    FollowUser.destroy({
+      where: { 
+        follower_id: req.params.username,
+        followee_id: req.params.username2
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Unfollowed!' });
+    })
+  })
+
+
 // Get all posts that the user has favorited
 router.route('/users/:username/favorites')
   .get(function(req, res) {
@@ -317,6 +422,38 @@ router.route('/users/:username/favorites')
       if (err) return(res.send(err));
       res.json(out);
     });
+  })
+
+
+// Favorites a post
+router.route('/users/:username/favorites/:post_id')
+  .post(function(req, res) {
+    Favorite.sequelize.transaction().then(function(t) {
+      Favorite.create({
+        username: req.params.username,
+        post_id: req.params.post_id
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Favorited!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Unfavorite a post
+router.route('/users/:username/favorites/:post_id')
+  .delete(function(req, res) {
+    Favorite.destroy({
+      where: { 
+        post_id: req.params.post_id,
+        username: req.params.username
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Removed post from Favorites!' });
+    })
   })
 
 
@@ -346,6 +483,41 @@ router.route('/posts/:id')
       res.send(out);
     });
   });
+
+
+// Update a post
+router.route('/posts/:id')
+  .put(function(req, res) {
+    Post.update(
+      {
+        username: req.body.username,
+        location_id: req.body.location_id,
+        timestamp: Sequelize.fn('NOW'),
+        text: req.body.text
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Post updated!' });
+    })
+  })
+
+
+// Delete a post
+router.route('/posts/:id')
+  .delete(function(req, res) {
+    Post.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Post deleted!' });
+    })
+  })
 
 
 // Get all images belong to a post
@@ -378,7 +550,7 @@ router.route('/posts/:id/animals')
   });
 
 
-// Get all users who favorite a post
+// Get all users who favorited a post
 router.route('/posts/:id/favorites')
   .get(function(req, res) {
     Post.findAll({
@@ -421,12 +593,30 @@ router.route('/animals')
   });
 
 
-// Get the animal that matches the id
-router.route('/animals/:animal_id')
+// Add an animal
+router.route('/animals')
+  .post(function(req, res) {
+    Animal.sequelize.transaction().then(function(t) {
+      Animal.create({
+        name: req.body.name,
+        species: req.body.species
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Animal added!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Get an animal by id
+router.route('/animals/:id')
   .get(function(req, res) {
     Animal.findAll({
       where: {
-        id: req.params.animal_id
+        id: req.params.id
       }
     }).then ( (err, out) => {
       if (err) res.send(err);
@@ -435,8 +625,28 @@ router.route('/animals/:animal_id')
   });
 
 
+// Update an animal
+router.route('/animals/:id')
+  .put(function(req, res) {
+    Animal.update(
+      {
+        name: req.body.name,
+        species: req.body.species
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Animal updated!' });
+    })
+  }) 
+
+
 // Get all locations of an animal
-router.route('/animals/:animal_id/locations')
+router.route('/animals/:id/locations')
   .get(function(req, res) {
     Animal.findAll({
       attributes: ['locations'],
@@ -451,7 +661,7 @@ router.route('/animals/:animal_id/locations')
 
 
 // Get all posts that an animal appears in
-router.route('/animals/:animal_id/posts')
+router.route('/animals/:id/posts')
   .get(function(req, res) {
     Animal.findAll({
       attributes: ['posts'],
@@ -479,7 +689,7 @@ router.route('/images')
   });
 
 
-// Get the animal that matches the id
+// Get an image by id
 router.route('/images/:id')
   .get(function(req, res) {
     Image.findAll({
@@ -560,11 +770,6 @@ app.use('/api', router);
 
 // SwaggerUI
 //router.route('/api-docs', swaggerUI.server, swaggerUI.setup(swaggerDocument, swaggerOptions));
-
-// test the homepage of the app (GET http://localhost)
-app.get('/', function(req, res) {
-  res.json({ message:'Hello World!' });
-});
 
 // ====================
 // START THE SERVER
