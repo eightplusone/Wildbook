@@ -11,3 +11,7 @@ How to run the server:
 
 Client 
 =====
+
+How to run the client:
+1. cd AwesomeProject
+2. react-native run-android
