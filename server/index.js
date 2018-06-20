@@ -4,9 +4,42 @@
 // ====================
 // BASE SETUP
 // ====================
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
+var fs = require('fs');
+var express = require('express');
+var app = express();
+var bodyParser = require('body-parser');
+
+// AWS and S3
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3({
+  apiVersion: '2006-03-01',
+  params: { Bucket: 'wildbook' }
+});
+
+// Multer
+var multer = require('multer');
+var multerS3 = require('multer-s3');
+
+// Assign an S3 bucket to multer.
+// Problem of AWS S3: metadata has to be in ASCII.
+// It means any metadata of a photo will be removed.
+var upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'wildbook/images',
+    acl: 'public-read',
+    /*metadata: function(req, file, cb) {
+      cb(null, { fieldName: file.fieldName });
+    },*/
+    key: function(req, file, cb) {
+      var fileExtension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity));
+      //cb(null, Date.now().toString())
+      //cb(null, file.originalname);
+      cb(null, Date.now().toString() + fileExtension);
+    }
+  })
+})
+
 var swaggerJSDoc = require('swagger-jsdoc');
 //var swaggerUI = require('swagger-ui-express'),
 //    swaggerDocument = require('./swagger.json');
@@ -16,7 +49,7 @@ var swaggerJSDoc = require('swagger-jsdoc');
 app.use(bodyParser.urlencoded({ extended:true }));
 app.use(bodyParser.json());
 
-const port = process.env.PORT || 3000;
+var port = process.env.PORT || 3000;
 
 /*
 var swaggerDefinition = {
@@ -60,6 +93,12 @@ var Post = require(process.cwd() + '/models/post');
 var User = require(process.cwd() + '/models/user');
 
 
+// test the homepage of the app (GET http://localhost)
+app.get('/', function(req, res) {
+  res.json({ message:'Hello World!' });
+});
+
+
 // =====================
 // ROUTES FOR OUR API
 // =====================
@@ -68,7 +107,7 @@ const router = express.Router();  // get an instance of the express router
 // middleware to use for all requests
 router.use(function(req, res, next) {
   // do logging
-  console.log('Something is happening.');
+  console.log('API routing...');
   next();  // make sure we go to the next routes and don't stop here
 });
 
@@ -96,16 +135,20 @@ router.route('/users')
 // Add a user
 router.route('/users')
   .post(function(req, res) {
-    var user = new User();
-    user.username = req.body.username;
-    user.password = req.body.password;
-    user.fname = req.body.fname;
-    user.lname = req.body.lname;
-
-    user.save(function(err) {
-      if (err) return(res.send(err));
-      res.json({ message: 'New user created!' });
-    });
+    User.sequelize.transaction().then(function(t) {
+      User.create({
+        username: req.body.username,
+        password: req.body.password,
+        fname: req.body.fname,
+        lname: req.body.lname
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'User created!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
   });
 
 
@@ -123,27 +166,39 @@ router.route('/users/:username')
   });
 
 
-// Modify user information
-router.route('/user/:username')
+// Update a user
+router.route('/users/:username')
   .put(function(req, res) {
-    User.findOne({
-      where: {
+    User.update(
+      {
+        username: req.body.username,
+        password: req.body.password,
+        fname: req.body.fname,
+        lname: req.body.lname
+      }, 
+      {
+        where: {
+          username: req.params.username
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      console.log(result);
+    })
+  });
+
+
+// Delete a user
+router.route('/users/:username')
+  .delete(function(req, res) {
+    User.destroy({
+      where: { 
         username: req.params.username
       }
-    }).then( (err, user) => {
-      if (err) return(res.send(err));
-      
-      user.username = req.body.username;
-      user.password = req.body.password;
-      user.fname = req.body.fname;
-      user.lname = req.body.lname;
-
-      user.save(function(err) {
-        if (err) return(res.send(err));
-        res.json({ message: 'User updated!' })
-      });
-    });
-  });
+    }).then( destroyed => {
+      res.json({ message: 'User deleted!' });
+    })
+  })
 
 
 // Get all posts belong to the user
@@ -162,72 +217,29 @@ router.route('/users/:username/posts')
 
 
 // Add a new post
-/*
-router.route('/users/:username/posts')
-  .post(function(req, res) {
-    Post.sequelize.transaction().then(function(t) {
-      Post.create({
-          username: req.params.username,
-          location_id: req.body.location_id,
-          timestamp: Sequelize.fn('NOW'),
-          text: req.body.text
-      }).then(function() {
-        t.commit();
-      }).catch(function(err) {
-        res.send(err);
-        t.rollback();
-      })
-    });
-  })
-*/
-
-var fs = require('fs');
-var multer = require('multer');
-
-var AWS = require('aws-sdk');
-var s3 = new AWS.S3({
-  apiVersion: '2006-03-01',
-  params: { Bucket: 'wildbook' }
-});
-
-var multerS3 = require('multer-s3');
-
-
-// Problem of AWS S3: metadata has to be in ASCII.
-// It means any metadata of a photo will be removed.
-var upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: 'wildbook/images',
-    acl: 'public-read',
-    /*metadata: function(req, file, cb) {
-      cb(null, { fieldName: file.fieldName });
-    },*/
-    key: function(req, file, cb) {
-      var fileExtension = file.originalname.slice((Math.max(0, file.originalname.lastIndexOf(".")) || Infinity));
-      //cb(null, Date.now().toString())
-      //cb(null, file.originalname);
-      cb(null, Date.now().toString() + fileExtension);
-    }
-  })
-})
-
+// Assume that this post contains only 1 image
 router.route('/users/:username/posts')
   .post(upload.single('imagefile'), function(req, res) {
     var imageId = 0;
     var postId = 0;
 
-    console.log("Req body", req.body);
+    console.warn("Req body", req);
     
+    // For some reason, I could not retrieve imageId 
+    // and postId with three independent save queries
+    // (probably because of asynchronicity). Thus, I
+    // nested the three queries below to pass values
+    // more easily.
+
     // Save image
     Image.sequelize.transaction().then(function(t) {
       Image.create({
-          url: req.file.location,
-          timestamp: Sequelize.fn('NOW'),
-          lat: 1,
-          long: 1,
-          username: req.params.username,
-          is_uploaded_to_ibeis: 'true'
+        url: req.file.location,
+        timestamp: Sequelize.fn('NOW'),
+        lat: req.body.lat,
+        long: req.body.long,
+        username: req.params.username,
+        is_uploaded_to_ibeis: 'true'
       }).then(function(obj) {
         imageId = obj.id;
         t.commit();
@@ -235,10 +247,10 @@ router.route('/users/:username/posts')
         // Save post
         Post.sequelize.transaction().then(function(t) {
           Post.create({
-              username: req.params.username,
-              location_id: 1,
-              timestamp: Sequelize.fn('NOW'),
-              text: 'req.body.text'
+            username: req.params.username,
+            location_id: req.body.location_id,
+            timestamp: Sequelize.fn('NOW'),
+            text: req.body.text
           }).then(function(obj) {
             postId = obj.id;
             t.commit();
@@ -252,24 +264,25 @@ router.route('/users/:username/posts')
                 t.commit();
               }).catch(function(err) {
                 t.rollback();
-                console.log(err);
+                console.warn(err);
               })
             })
 
           }).catch(function(err) {
             t.rollback();
-            console.log(err);
+            console.warn(err);
           })
         });
 
       }).catch(function(err) {
         t.rollback();
-        console.log(err);
+        console.warn(err);
       })
     })
 
     
   })
+
 
 // Get all locations of a user
 router.route('/users/:username/locations')
@@ -316,6 +329,100 @@ router.route('/users/:username/followings')
   })
 
 
+// Get all animals that a user is following
+router.route('/users/:username/following_animals')
+  .get(function(req, res) {
+    User.findAll({
+      attributes: ['following_animals'],
+      where: {
+        username: req.params.username
+      }
+    }).then( (err, out) => {
+      if (err) return(res.send(err));
+      res.json(out);
+    });
+  })
+
+
+// Follow an animal
+router.route('/users/:username/following_animals/:animal_id')
+  .post(function(req, res) {
+    FollowAnimal.sequelize.transaction().then(function(t) {
+      FollowAnimal.create({
+        username: req.params.username,
+        animal_id: req.params.animal_id
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Followed!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Unfollow an animal
+router.route('/users/:username/following_animals/:animal_id')
+  .delete(function(req, res) {
+    FollowAnimal.destroy({
+      where: { 
+        animal_id: req.params.animal_id,
+        username: req.params.username
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Unfollowed!' });
+    })
+  })
+
+
+// Get all users that a user is following
+router.route('/users/:username/following_users')
+  .get(function(req, res) {
+    User.findAll({
+      attributes: ['following_users'],
+      where: {
+        username: req.params.username
+      }
+    }).then( (err, out) => {
+      if (err) return(res.send(err));
+      res.json(out);
+    });
+  })
+
+
+// Follow a user
+router.route('/users/:username/following_users/:username2')
+  .post(function(req, res) {
+    FollowUser.sequelize.transaction().then(function(t) {
+      FollowUser.create({
+        follower_id: req.params.username,
+        followee_id: req.params.username2
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Followed!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+ 
+
+// Unfollow a user
+router.route('/users/:username/following_users/:username2')
+  .delete(function(req, res) {
+    FollowUser.destroy({
+      where: { 
+        follower_id: req.params.username,
+        followee_id: req.params.username2
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Unfollowed!' });
+    })
+  })
+
+
 // Get all posts that the user has favorited
 router.route('/users/:username/favorites')
   .get(function(req, res) {
@@ -328,6 +435,38 @@ router.route('/users/:username/favorites')
       if (err) return(res.send(err));
       res.json(out);
     });
+  })
+
+
+// Favorites a post
+router.route('/users/:username/favorites/:post_id')
+  .post(function(req, res) {
+    Favorite.sequelize.transaction().then(function(t) {
+      Favorite.create({
+        username: req.params.username,
+        post_id: req.params.post_id
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Favorited!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Unfavorite a post
+router.route('/users/:username/favorites/:post_id')
+  .delete(function(req, res) {
+    Favorite.destroy({
+      where: { 
+        post_id: req.params.post_id,
+        username: req.params.username
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Removed post from Favorites!' });
+    })
   })
 
 
@@ -359,6 +498,41 @@ router.route('/posts/:id')
   });
 
 
+// Update a post
+router.route('/posts/:id')
+  .put(function(req, res) {
+    Post.update(
+      {
+        username: req.body.username,
+        location_id: req.body.location_id,
+        timestamp: Sequelize.fn('NOW'),
+        text: req.body.text
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Post updated!' });
+    })
+  })
+
+
+// Delete a post
+router.route('/posts/:id')
+  .delete(function(req, res) {
+    Post.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Post deleted!' });
+    })
+  })
+
+
 // Get all images belong to a post
 router.route('/posts/:id/images')
   .get(function(req, res) {
@@ -372,6 +546,54 @@ router.route('/posts/:id/images')
       res.send(out);
     });
   });
+
+
+// Add image to a post
+router.route('/posts/:id/images')
+  .post(upload.single('imagefile'), function(req, res) {
+    var imageId = 0;
+    var postId = 0;
+
+    console.warn("Req body", req);
+    
+    // For some reason, I could not retrieve imageId 
+    // and postId with three independent save queries
+    // (probably because of asynchronicity). Thus, I
+    // nested the three queries below to pass values
+    // more easily.
+
+    // Save image
+    Image.sequelize.transaction().then(function(t) {
+      Image.create({
+        url: req.file.location,
+        timestamp: Sequelize.fn('NOW'),
+        lat: req.body.lat,
+        long: req.body.long,
+        username: req.body.username,
+        is_uploaded_to_ibeis: 'true'
+      }).then(function(obj) {
+        imageId = obj.id;
+        t.commit();
+
+        // Update image in post
+        ImageInPost.sequelize.transaction().then(function(t) {
+          ImageInPost.create({
+            image_id: imageId,
+            post_id: req.params.id
+          }).then(function() {
+            t.commit();
+          }).catch(function(err) {
+            t.rollback();
+            console.warn(err);
+          })
+        })
+
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
 
 
 // Get all animals appear in a post
@@ -389,7 +611,7 @@ router.route('/posts/:id/animals')
   });
 
 
-// Get all users who favorite a post
+// Get all users who favorited a post
 router.route('/posts/:id/favorites')
   .get(function(req, res) {
     Post.findAll({
@@ -432,12 +654,30 @@ router.route('/animals')
   });
 
 
-// Get the animal that matches the id
-router.route('/animals/:animal_id')
+// Add an animal
+router.route('/animals')
+  .post(function(req, res) {
+    Animal.sequelize.transaction().then(function(t) {
+      Animal.create({
+        name: req.body.name,
+        species: req.body.species
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Animal added!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Get an animal by id
+router.route('/animals/:id')
   .get(function(req, res) {
     Animal.findAll({
       where: {
-        id: req.params.animal_id
+        id: req.params.id
       }
     }).then ( (err, out) => {
       if (err) res.send(err);
@@ -446,8 +686,41 @@ router.route('/animals/:animal_id')
   });
 
 
+// Update an animal
+router.route('/animals/:id')
+  .put(function(req, res) {
+    Animal.update(
+      {
+        name: req.body.name,
+        species: req.body.species
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Animal updated!' });
+    })
+  }) 
+
+
+// Delete an animal
+router.route('/animals/:id')
+  .delete(function(req, res) {
+    Animal.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Animal deleted!' });
+    })
+  })
+
+
 // Get all locations of an animal
-router.route('/animals/:animal_id/locations')
+router.route('/animals/:id/locations')
   .get(function(req, res) {
     Animal.findAll({
       attributes: ['locations'],
@@ -462,7 +735,7 @@ router.route('/animals/:animal_id/locations')
 
 
 // Get all posts that an animal appears in
-router.route('/animals/:animal_id/posts')
+router.route('/animals/:id/posts')
   .get(function(req, res) {
     Animal.findAll({
       attributes: ['posts'],
@@ -490,7 +763,7 @@ router.route('/images')
   });
 
 
-// Get the animal that matches the id
+// Get image by id
 router.route('/images/:id')
   .get(function(req, res) {
     Image.findAll({
@@ -504,7 +777,44 @@ router.route('/images/:id')
   });
 
 
-// Get the animal that matches the id
+// Update an image
+router.route('/images/:id')
+  .put(function(req, res) {
+    Image.update(
+      {
+        url: req.body.url,
+        timestamp: req.body.timestamp,
+        lat: req.body.lat,
+        long: req.body.long,
+        location_id: req.body.location_id,
+        username: req.body.username,
+        is_uploaded_to_ibeis: req.body.is_uploaded_to_ibeis
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Image updated!' });
+    })
+  })
+
+
+// Delete an image
+router.route('/images/:id')
+  .delete(function(req, res) {
+    Image.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Image deleted!' });
+    })
+  })
+
+// Get the list of animals appearing in a picture
 router.route('/images/:id/animals')
   .get(function(req, res) {
     AnimalFoundInImage.findAll({
@@ -517,6 +827,38 @@ router.route('/images/:id/animals')
       res.json(out);
    });
   });
+
+
+// Add an animal to an image
+router.route('/images/:id/animals/:animal_id')
+  .post(function(req, res) {
+    AnimalFoundInImage.sequelize.transaction().then(function(t) {
+      AnimalFoundInImage.create({
+        animal_id: req.params.animal_id,
+        image_id: req.params_id
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Animal added to image!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Remove an animal from an image
+router.route('/images/:id/animals/:animal_id')
+  .delete(function(req, res) {
+    AnimalFoundInImage.destroy({
+      where: { 
+        animal_id: req.params.animal_id,
+        image_id: req.params_id
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Animal removed from image!' });
+    })
+  })
 
 
 // --------------------
@@ -533,7 +875,26 @@ router.route('/locations')
   });
 
 
-// Get a specific location
+// Add a location
+router.route('/locations')
+  .post(function(req, res) {
+    Location.sequelize.transaction().then(function(t) {
+      Location.create({
+        name: req.body.name,
+        lat: req.body.lat,
+        long: req.body.long,
+      }).then(function(err, result) {
+        t.commit();
+        res.json({ message:'Location added!' })
+      }).catch(function(err) {
+        t.rollback();
+        console.warn(err);
+      })
+    })
+  })
+
+
+// Get a location by id
 router.route('/locations/:id')
   .get(function(req, res) {
     Location.findAll({
@@ -545,6 +906,40 @@ router.route('/locations/:id')
       res.json(out);
    });
   });
+
+
+// Update a location
+router.route('/locations/:id')
+  .put(function(req, res) {
+    Location.update(
+      {
+        name: req.body.name,
+        lat: req.body.lat,
+        long: req.body.long
+      }, 
+      {
+        where: {
+          id: req.params.id
+        }
+      }
+    ).then( (err, result) => {
+      if (err) return(res.send(err));
+      res.json({ message:'Location updated!' });
+    })
+  })
+
+
+// Delete an location
+router.route('/locations/:id')
+  .delete(function(req, res) {
+    Location.destroy({
+      where: { 
+        id: req.params.id,
+      }
+    }).then( destroyed => {
+      res.json({ message: 'Location deleted!' });
+    })
+  })
 
 
 // Get all posts belong to a location
@@ -562,7 +957,6 @@ router.route('/locations/:id/posts')
   });
 
 
-
 // =====================
 // REGISTER OUR ROUTES 
 // ====================
@@ -571,11 +965,6 @@ app.use('/api', router);
 
 // SwaggerUI
 //router.route('/api-docs', swaggerUI.server, swaggerUI.setup(swaggerDocument, swaggerOptions));
-
-// test the homepage of the app (GET http://localhost)
-app.get('/', function(req, res) {
-  res.json({ message:'Hello World!' });
-});
 
 // ====================
 // START THE SERVER

@@ -6,6 +6,7 @@ var Location = db.database.define(
   {
     id: { 
       type: Sequelize.INTEGER, 
+      autoIncrement: true,
       primaryKey: true 
     },
     name: {
