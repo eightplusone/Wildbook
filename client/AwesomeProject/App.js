@@ -23,6 +23,7 @@ import StoryScreen from './screens/StoryScreen';
 ////warning ignoring
 import { YellowBox } from 'react-native';
 YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader']);
+
 ///
 // export default Project = StackNavigator(
 // {
