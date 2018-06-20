@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import {Alert, Button, FlatList, ActivityIndicator,View, Text, StyleSheet, Dimensions} from 'react-native';
+import {Alert, Button, FlatList, ActivityIndicator,View, Text, StyleSheet, Dimensions, Image} from 'react-native';
 import Camera from 'react-native-camera';
-import MapView from 'react-native-maps';
+import MapView , {Marker} from 'react-native-maps';
 import { Header, SearchBar } from 'react-native-elements';
 import Icon from 'react-native-vector-icons';
 import FontAwesome, { Icons } from 'react-native-fontawesome';
@@ -11,64 +11,25 @@ import { StackNavigator} from 'react-navigation';
 
 export default class HomeTripScreen extends Component {
 
-  // static navigationOptions = {
-  //   header: {
-  //     visible: false,
+  //
+  //
+  // constructor(props){
+  //     super(props);
+  //    this.state ={ isLoading: true}
   //   }
-  // }
-
-//   navigationOptions = {
-//   header: ( /* Your custom header */
-//     <View
-//       style={{
-//         height: 80,
-//         marginTop: 20 /* only for IOS to give StatusBar Space */
-//       }}
-//     >
-//       <Text>This is CustomHeader</Text>
-//     </View>
-//   )
-// };
-
-  constructor(props){
-      super(props);
-      // this.state ={ isLoading: true}
-    }
 
  state = {
  		mapRegion: null,
  		lastLat: null,
  		lastLong: null,
+
+    markers:[],
  	}
-  //***Camera
-// takePicture() {
-//  this.camera.capture()
-//     .then((data) => console.log(data))
-//     .catch(err => console.error(err));
-// }
-////
 
 _onPressButton = () =>
 {
    this.props.navigation.navigate('camera');
 }
- //      _onPressButton() {
- //    // Alert.alert('You tapped the button!')
- //
- // this.props.navigation.navigate('Camera');
- //    //     return (
- //    //       <Camera
- //    //    ref={(cam) => {
- //    //        this.camera = cam;
- //    //     }}
- //    //     style={styles.preview}
- //    //     aspect={Camera.constants.Aspect.fill}>
- //    //        <Text style={styles.capture} onPress={this.takePicture.bind(this)}>
- //    //           [CAPTURE]
- //    //        </Text>
- //    // </Camera>
- //        // );
- //  }
 
  componentDidMount(){
 
@@ -83,24 +44,40 @@ _onPressButton = () =>
      this.onRegionChange(region, region.latitude, region.longitude);
    });
 
-   //&&&data
-   // return fetch('https://facebook.github.io/react-native/movies.json')
-  // return fetch('http://34.204.0.81/api/users')
-  //
-  //    .then((response) => response.json())
-  //    .then((responseJson) => {
-  //
-  //      this.setState({
-  //        isLoading: false,
-  //        dataSource: responseJson,
-  //      }, function(){
-  //
-  //      });
-  //
-  //    })
-  //    .catch((error) =>{
-  //      console.error(error);
-  //    });
+//data
+      return fetch('http://34.204.0.81/api/images')
+       .then((response) => response.json())
+       .then((responseJson) => {
+
+         let markers = [...this.state.markers];
+         markers = responseJson;
+         this.setState({ markers });
+         console.log(responseJson);
+
+         // this.setState({
+         //   isLoading: false,
+         //   marker: responseJson.data,
+         // }, function(){
+         // });
+
+       })
+       .catch((error) =>{
+         console.error(error);
+       });
+ }
+
+ constructor(props) {
+ super(props);
+
+ // this.state ={ isLoading: true}
+
+ // this.state = {
+ // markers: [
+ // {
+ // // latlng: { latitude: marker.lat, longitude: marker.long}
+ // }
+ // ]
+ // }
  }
 
  onRegionChange(region, lastLat, lastLong) {
@@ -135,7 +112,7 @@ _onPressButton = () =>
 <Header
 placement="left"
 leftComponent={{ icon: 'pets' , onPress: () => {this.props.navigation.navigate('switchHome');}, color: '#fff'}}
-centerComponent={{ text: 'Wildbook', style: { color: '#fff' } }}
+centerComponent={{ text: 'Wildbook', onPress: () => {this.props.navigation.navigate('story');}, style: { color: '#fff' } }}
 rightComponent={{ icon: 'notifications', onPress: () => {this.props.navigation.navigate('mainTabNavigator');}, color: '#fff' }}
 />
     <MapView
@@ -145,12 +122,26 @@ rightComponent={{ icon: 'notifications', onPress: () => {this.props.navigation.n
       followUserLocation={true}
       onRegionChange={this._handleMapRegionChange}
     >
+    {this.state.markers.map(marker => (
+                    <MapView.Marker key={marker.id}
+                      coordinate={{
+                        latitude: marker.lat,
+                        longitude:marker.long,
+                      }}
+                      title={"marker.title"}
+                      description={"marker.description"}
+                       anchor={{ x: 0.20, y: 0.5 }}
+                       // image={ <Image source = {{ uri: marker.url }}/>}
+                    >
+                      <Image source={{ uri: marker.url }} onLoad={() => this.forceUpdate()} style={{ width: 30, height: 30 }}  />
+                    </MapView.Marker>
+                  ))}
     </MapView>
 
     <SearchBar
   showLoading
   platform="android"
-  placeholder='Search' />
+  placeholder='Search'/>
 
     <Button
           onPress={
@@ -158,7 +149,30 @@ rightComponent={{ icon: 'notifications', onPress: () => {this.props.navigation.n
           title="Camera"
         />
 
-</View>
+    </View>
+
+
+
+// const data={this.state.dataSource};
+
+
+//  data.items.map((item) => (
+//
+//   <MapView.Marker
+//                coordinate={{
+//                 latitude: item.lat,
+//                 longitude:item.long,
+//               }}
+//               image={ <Image source = {{ uri: item.url }} style={{width: 10, height: 10}}/>}
+//               >
+//               <View>
+//                 <Text style={{color: '#000'}}>
+//                  {/* { this.state.lastLong } / { this.state.lastLat } */}
+//                 </Text>
+//               </View>
+//             </MapView.Marker>
+//
+// ))
 
       //$$$data
       // <View style={{flex: 1, paddingTop:20}}>

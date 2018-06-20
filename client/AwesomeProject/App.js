@@ -8,6 +8,7 @@ import FontAwesome, { Icons } from 'react-native-fontawesome';
 import Fontawesomeicons from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { StackNavigator } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation';
 
 import HomeTripScreen from './screens/HomeTripScreen';
 import MainTabNavigator from './Navigation/MainTabNavigator';
@@ -16,8 +17,13 @@ import SwitchHomeScreen from './screens/SwitchHomeScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import SignInScreen from './screens/SignInScreen';
 import AuthScreen from './screens/AuthScreen';
+import CameraRollScreen from './screens/CameraRollScreen';
+import StoryScreen from './screens/StoryScreen';
 
-
+////warning ignoring
+import { YellowBox } from 'react-native';
+YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader']);
+///
 // export default Project = StackNavigator(
 // {
 //   Home: { screen: Home },
@@ -33,6 +39,8 @@ const App = StackNavigator(
      signIn: {screen: SignInScreen},
      signUp: {screen: SignUpScreen},
      mainTabNavigator: {screen: MainTabNavigator},
+     cameraRoll: {screen: CameraRollScreen},
+     story: {screen: StoryScreen},
    },
    {
      initialRouteName: 'homeTrip',

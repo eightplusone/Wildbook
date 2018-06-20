@@ -4,14 +4,19 @@ import {
   StyleSheet,
   Text,
   Dimensions,
-  View
+  View,
+  Button
 } from 'react-native';
+import {StackNavigator} from 'react-navigation';
+
 
 import Camera from 'react-native-camera';
 
 const PicturePath = "";
 
 export default class MyCamera extends Component {
+
+  static navigationOptions = ({ navigation }) => ({});//?
   constructor(props) {
     super(props);
     this.state = {
@@ -19,9 +24,28 @@ export default class MyCamera extends Component {
       mirrorMode : false
     }
   }
+
+_switch  = () =>{
+  this.props.navigation.navigate('cameraRoll')
+}
+
+  static navigationOptions = {
+     // headerRight: (
+     //   // <Button title="Load Images" onPress={()=>this.props.navigation.navigate('cameraRoll')}
+     //
+     //   // {this._switch}
+     //    // />
+     // ),
+   }
+
   render() {
+    const { navigate } = this.props.navigation;
     return (
       <View style={styles.container}>
+      <Button
+        title="CameraRoll"
+        onPress={()=>this.props.navigation.navigate('cameraRoll')}
+      />
        <Camera
            ref={(cam) => { this.camera = cam; }}
            style={styles.preview}
@@ -57,11 +81,10 @@ export default class MyCamera extends Component {
 
 
   storePicture(){
-
-      if (PicturePath) {
+      // if (PicturePath) {
         // Create the form data object
         var data = new FormData();
-        data.append('picture', {uri: PicturePath, name: 'selfie.jpg', type: 'image/jpg'});
+        data.append('imagefile', {uri: PicturePath, name: 'selfie.jpg',lat:"41.8694" ,long:"-87.65" ,location_id:"1" , text:"" , type: 'image/jpg'});
 
         // Create the config object for the POST
         // You typically have an OAuth2 token that you use for authentication
@@ -69,13 +92,14 @@ export default class MyCamera extends Component {
          method: 'POST',
          headers: {
            'Accept': 'application/json',
-           'Content-Type': 'multipart/form-data;',
-           'Authorization': 'Bearer ' + 'SECRET_OAUTH2_TOKEN_IF_AUTH',
+           // 'Content-Type': 'multipart/form-data;',
+           // 'Authorization': 'Bearer ' + 'SECRET_OAUTH2_TOKEN_IF_AUTH',
          },
          body: data,
         }
 
-        fetch("https://postman-echo.com/post", config)
+        // fetch("https://postman-echo.com/post", config)
+        fetch("http://34.204.0.81/api/users/user1/posts", config)
          .then((responseData) => {
              // Log the response form the server
              // Here we get what we sent to Postman back
@@ -84,17 +108,21 @@ export default class MyCamera extends Component {
          .catch(err => {
            console.log(err);
          })
-    }
+    // }
   }
 
   takePicture() {
    this.camera.capture()
      .then((data) => {
          console.log(data);
-         PicturePath = data.path;
+          PicturePath = data.path;
+        // PicturePath = data.uri;
      })
      .catch(err => console.error(err));
+
+     this.storePicture();
   }
+
 }
 
 const styles = StyleSheet.create({

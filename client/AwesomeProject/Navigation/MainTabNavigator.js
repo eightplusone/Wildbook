@@ -4,7 +4,8 @@ import { Button, Text, View } from 'react-native';
 // import { Ionicons } from '@expo/vector-icons'; // Version can be specified in package.json
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { StackNavigator, TabNavigator, TabBarBottom } from 'react-navigation'; // Version can be specified in package.json
-import ProfileScreen from '../screens/ProfileScreen';
+// import ProfileScreen from '../screens/ProfileScreenList';
+import ProfileNavigator from '../screens/ProfileNavigator';
 import HomeSocialScreen from '../screens/HomeSocialScreen'
 import MoreScreen from '../screens/MoreScreen';;
 
@@ -21,7 +22,7 @@ import MoreScreen from '../screens/MoreScreen';;
 const MainNavigation = new TabNavigator(
 // export default TabNavigator(
   {
-    profile: {screen: ProfileScreen},
+    profile: {screen: ProfileNavigator},
     homeSocial: { screen: HomeSocialScreen },
     more: { screen: MoreScreen },
   },
@@ -52,6 +53,7 @@ const MainNavigation = new TabNavigator(
     },
     animationEnabled: false,
     swipeEnabled: false,
+    lazyLoad: true,
   }
 );
 

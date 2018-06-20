@@ -14,9 +14,16 @@ import t from 'tcomb-form-native';
 const Form = t.form.Form;
 
 const Authentication = t.struct({
-  email: t.String,
+  username: t.String,
   password: t.String,
 });
+
+const FBSDK = require('react-native-fbsdk');
+const {
+  LoginButton,
+  AccessToken
+} = FBSDK;
+
 
 export default class CameraScreen extends Component {
   constructor(props){
@@ -35,7 +42,8 @@ handleSubmit = () => {//????
     authenticating:"true"
   })
 
-  const url = 'https://spotholes-casuru.c9users.io/api/v1/auth/token/'
+  // const url = 'https://spotholes-casuru.c9users.io/api/v1/auth/token/'
+    const url = 'http://34.204.0.81/api/users';
   const value = this._form.getValue();
   console.log(value);
   return fetch(url, {
@@ -47,10 +55,10 @@ handleSubmit = () => {//????
     body:JSON.stringify(value)
     }).then((response) => response.json())
     .then(async(responseJson) => {
-      if("token" in responseJson){
-        await AsyncStorage.setItem("@spotholesAuthToken", responseJson["token"]);
-        this.props.navigation.navigate("Home");
-      }
+    //  if("token" in responseJson){
+    //    await AsyncStorage.setItem("@spotholesAuthToken", responseJson["token"]);
+        this.props.navigation.navigate("homeSocial");
+      //}
       this.setState({
         authenticating:"false"
       });
@@ -77,6 +85,26 @@ handleSubmit = () => {//????
               title="Sign Up"
               onPress={()=>this.props.navigation.navigate('signUp')}
             />
+
+            <LoginButton
+          publishPermissions={["publish_actions"]}
+          onLoginFinished={
+            (error, result) => {
+              if (error) {
+                alert("login has error: " + result.error);
+              } else if (result.isCancelled) {
+                alert("login is cancelled.");
+              } else {
+                AccessToken.getCurrentAccessToken().then(
+                  (data) => {
+                    alert(data.accessToken.toString())
+                  }
+                )
+              }
+            }
+          }
+          onLogoutFinished={() => alert("logout.")}/>
+
           </View>
 
 

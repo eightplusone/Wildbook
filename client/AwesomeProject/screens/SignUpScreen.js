@@ -14,9 +14,9 @@ import t from 'tcomb-form-native';
 const Form = t.form.Form;
 
 const User = t.struct({
-  name: t.String,
-  surname: t.maybe(t.String),
-  email: t.String,
+  fname: t.String,
+  lname: t.maybe(t.String),
+  // email: t.String,
   username: t.String,
   password: t.String
 });
@@ -45,7 +45,8 @@ handleSubmit = () => {///??/??
     authenticating:true
   })
 
-  const url = 'https://spotholes-casuru.c9users.io/api/v1/accounts/';
+  // const url = 'https://spotholes-casuru.c9users.io/api/v1/accounts/';
+  const url = 'http://34.204.0.81/api/users';
   const value = this._form.getValue();
   return fetch(url, {
     method:"POST",
