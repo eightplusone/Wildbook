@@ -57,9 +57,9 @@ export default class HomeTripScreen extends Component {
           numRows={1}
           renderItem={({item}) =>
 
-<View>
+          <View>
             <Image source = {{ uri: item.url }} style={{width: 50, height: 50}}/>
-</View>
+          </View>
 
 
           }

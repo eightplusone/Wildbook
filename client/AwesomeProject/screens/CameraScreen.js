@@ -57,7 +57,7 @@ _switch  = () =>{
            >
            <Text style={styles.capture} onPress={this.takePicture.bind(this)}>[CAPTURE]</Text>
            <Text style={styles.capture} onPress={this.storePicture.bind(this)}>[UPLOAD]</Text>
-           <Text style={styles.capture} onPress={this.changeCameraType.bind(this)}>[SWITCH O ROONEY]</Text>
+           <Text style={styles.capture} onPress={this.changeCameraType.bind(this)}>[SWITCH]</Text>
 
        </Camera>
       </View>

@@ -19,6 +19,9 @@ import SignInScreen from './screens/SignInScreen';
 import AuthScreen from './screens/AuthScreen';
 import CameraRollScreen from './screens/CameraRollScreen';
 import StoryScreen from './screens/StoryScreen';
+import FollowerScreen from './screens/FollowerScreen';
+import FollowingScreen from './screens/FollowingScreen';
+
 
 ////warning ignoring
 import { YellowBox } from 'react-native';
@@ -42,6 +45,8 @@ const App = StackNavigator(
      mainTabNavigator: {screen: MainTabNavigator},
      cameraRoll: {screen: CameraRollScreen},
      story: {screen: StoryScreen},
+     follower: {screen: FollowerScreen},
+     following: {screen: FollowingScreen},
    },
    {
      initialRouteName: 'homeTrip',

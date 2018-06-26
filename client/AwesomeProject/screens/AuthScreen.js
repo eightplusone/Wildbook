@@ -25,6 +25,14 @@ static navigationOptions = ({ navigation }) => ({});//?
          title="Sign Up"
          onPress={()=>this.props.navigation.navigate('signUp')}
        />
+       <Button
+         title="To Follower Screen"
+         onPress={()=>this.props.navigation.navigate('follower')}
+       />
+       <Button
+        title="To Following Screen"
+        onPress={()=>this.props.navigation.navigate('following')}
+      />
      </View>
         );
   }

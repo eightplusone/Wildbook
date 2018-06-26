@@ -49,7 +49,7 @@ export default class HomeTripScreen extends Component {
   }
 
   renderImage() {
-    var imgSource = this.state.showSoundImg? require('../assets/Images/liked.png') : require('../assets/Images/like.png');
+    var imgSource = this.state.showSoundImg ? require('../assets/Images/liked.png') : require('../assets/Images/like.png');
     return (
       <Image source={ imgSource }
       style={{width: 30, height: 30, marginRight: 10, marginLeft:10,}}/>
