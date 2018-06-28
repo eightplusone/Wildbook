@@ -87,18 +87,18 @@ _switch  = () =>{
       //  data.append('imagefile', {uri: PicturePath, name: 'selfie.jpg',lat:"41.8694" ,long:"-87.65" ,location_id:"1" , text:"" , type: 'image/jpg'});
         data.append("imagefile", {uri: PicturePath, name: 'selfie.jpg', type: 'image/jpg'});
         // data.append("imagefile", PicturePath);
-        // data.append("lat",41.8694);
-        // data.append("long",-87.65);
-        // data.append("location_id",1);
-        // data.append("text",'hi');
+        data.append("lat",41.8694);
+        data.append("long",-87.65);
+        data.append("location_id",1);
+        data.append("text",'hi');
 
         // Create the config object for the POST
-        // You typically have an OAuth2 token that you use for authentication
+        // typically have an OAuth2 token that you use for authentication
         const config = {
          method: 'POST',
          headers: {
            'Accept': 'application/json',
-            'Content-Type': 'multipart/form-data;',
+           //'Content-Type': 'multipart/form-data;',
            // 'Authorization': 'Bearer ' + 'SECRET_OAUTH2_TOKEN_IF_AUTH',
          },
          body: data,
