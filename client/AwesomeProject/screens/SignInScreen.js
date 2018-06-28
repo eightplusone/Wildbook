@@ -42,29 +42,31 @@ handleSubmit = () => {//????
     authenticating:"true"
   })
 
+  this.props.navigation.navigate("homeSocial");
+
   // const url = 'https://spotholes-casuru.c9users.io/api/v1/auth/token/'
     const url = 'http://34.204.0.81/api/users';
   const value = this._form.getValue();
   console.log(value);
-  return fetch(url, {
-    method:"POST",
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body:JSON.stringify(value)
-    }).then((response) => response.json())
-    .then(async(responseJson) => {
-    //  if("token" in responseJson){
-    //    await AsyncStorage.setItem("@spotholesAuthToken", responseJson["token"]);
-        this.props.navigation.navigate("homeSocial");
-      //}
-      this.setState({
-        authenticating:"false"
-      });
-
-      console.log(responseJson);
-    });
+  // return fetch(url, {
+  //   method:"POST",
+  //   headers: {
+  //     'Accept': 'application/json',
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body:JSON.stringify(value)
+  //   }).then((response) => response.json())
+  //   .then(async(responseJson) => {
+  //    if("token" in responseJson){
+  //      await AsyncStorage.setItem("@spotholesAuthToken", responseJson["token"]);
+  //       this.props.navigation.navigate("homeSocial");
+  //     }
+  //     this.setState({
+  //       authenticating:"false"
+  //     });
+  //
+  //     console.log(responseJson);
+  //   });
 }
 
   render() {
@@ -85,7 +87,6 @@ handleSubmit = () => {//????
               title="Sign Up"
               onPress={()=>this.props.navigation.navigate('signUp')}
             />
-
             <LoginButton
           publishPermissions={["publish_actions"]}
           onLoginFinished={

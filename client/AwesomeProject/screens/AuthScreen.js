@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Alert, Button, FlatList, ActivityIndicator,View, Text, StyleSheet, Dimensions} from 'react-native';
+import {Alert, Button, FlatList, ActivityIndicator,View, Text, StyleSheet, Dimensions, Image} from 'react-native';
 import Camera from 'react-native-camera';
 import MapView from 'react-native-maps';
 import { Header } from 'react-native-elements';
@@ -17,7 +17,9 @@ static navigationOptions = ({ navigation }) => ({});//?
     const { navigate } = this.props.navigation;//?
         return (
           <View>
-       <Button
+
+          <Image source={require('../assets/Images/wild-logo.png')} style={{ width: 200, height: 200 , justifyContent: 'center', alignItems: 'center'}}/>
+          <Button
          title="Log In"
          onPress={()=>this.props.navigation.navigate('signIn')}
        />

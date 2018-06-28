@@ -10,6 +10,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { StackNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation';
 
+import HomeSocialScreen from './screens/HomeSocialScreen';
 import HomeTripScreen from './screens/HomeTripScreen';
 import MainTabNavigator from './Navigation/MainTabNavigator';
 import CameraScreen from './screens/CameraScreen';
@@ -22,7 +23,7 @@ import StoryScreen from './screens/StoryScreen';
 
 ////warning ignoring
 import { YellowBox } from 'react-native';
-YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader']);
+YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTImageLoader', 'The StackNavigator', 'Warning:']);
 ///
 // export default Project = StackNavigator(
 // {
@@ -33,6 +34,7 @@ YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTIm
 const App = StackNavigator(
    {
      homeTrip: { screen: HomeTripScreen},
+     homeSocial: { screen: HomeSocialScreen},
      camera: { screen: CameraScreen },
      switchHome: {screen: SwitchHomeScreen},
      auth: {screen: AuthScreen},
