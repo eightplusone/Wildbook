@@ -41,14 +41,14 @@ const MainNavigation = new TabNavigator(
 
         // You can return any component that you like here! We usually use an
         // icon component from react-native-vector-icons
-        return <Ionicons name={iconName} size={25} color={tintColor} />;
+        return <Ionicons name={iconName} size={50} color={tintColor} />;
       },
     }),
     initialRouteName: 'homeSocial',
     tabBarComponent: TabBarBottom,
     tabBarPosition: 'bottom',
     tabBarOptions: {
-      activeTintColor: 'tomato',
+      activeTintColor: 'blue',
       inactiveTintColor: 'gray',
     },
     animationEnabled: false,

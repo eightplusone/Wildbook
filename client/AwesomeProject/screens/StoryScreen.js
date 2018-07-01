@@ -60,8 +60,6 @@ export default class HomeTripScreen extends Component {
           <View>
             <Image source = {{ uri: item.url }} style={{width: 50, height: 50}}/>
           </View>
-
-
           }
           keyExtractor={(item, index) => index}
         />

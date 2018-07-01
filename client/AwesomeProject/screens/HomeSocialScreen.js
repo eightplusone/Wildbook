@@ -102,12 +102,9 @@ export default class HomeTripScreen extends Component {
 
       <Text style={{marginRight: 10}}>{item.timestamp}</Text>
       </View>
-
-
-
       </View>
     }
-    keyExtractor={(item, index) => index}
+    keyExtractor={(item, index) => index.toString()}
     />
     </View>
   );
