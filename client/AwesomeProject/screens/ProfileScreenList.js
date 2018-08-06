@@ -18,7 +18,7 @@ export default class HomeTripScreen extends Component {
 
   componentDidMount(){
     //&&&data
-    // return fetch('http://34.204.0.81/api/users/user1')
+    // return fetch('http://23.96.0.243:3000/api/users/user1')
     // .then((response) => response.json())
     // .then((responseJson) => {
     //   this.setState({
@@ -39,7 +39,7 @@ export default class HomeTripScreen extends Component {
 
   getPosts(){
     // this.state.posts.map(post => (
-    //           fetch('http://34.204.0.81/api/users/user1')
+    //           fetch('http://23.96.0.243:3000/api/users/user1')
     //           .then((response) => response.json())
     //           .then((responseJson) => {
     //             this.setState({

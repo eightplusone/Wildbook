@@ -105,7 +105,7 @@ _switch  = () =>{
         }
 
         // fetch("https://postman-echo.com/post", config)
-        fetch("http://34.204.0.81/api/users/user1/posts", config)
+        fetch("http://23.96.0.243:3000/api/users/user1/posts", config)
          .then((responseData) => {
              // Log the response form the server
              // Here we get what we sent to Postman back
