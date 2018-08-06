@@ -11,6 +11,7 @@ import { StackNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation';
 
 import HomeTripScreen from './screens/HomeTripScreen';
+import HomeSocialScreen from './screens/HomeSocialScreen'; //did not have this before so I added it
 import MainTabNavigator from './Navigation/MainTabNavigator';
 import CameraScreen from './screens/CameraScreen';
 import SwitchHomeScreen from './screens/SwitchHomeScreen';
@@ -37,6 +38,7 @@ YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTIm
 const App = StackNavigator(
    {
      homeTrip: { screen: HomeTripScreen},
+     homeSocial: {screen: HomeSocialScreen},
      camera: { screen: CameraScreen },
      switchHome: {screen: SwitchHomeScreen},
      auth: {screen: AuthScreen},

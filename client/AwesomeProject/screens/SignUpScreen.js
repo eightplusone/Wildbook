@@ -22,7 +22,7 @@ const User = t.struct({
 });
 
 
-export default class CameraScreen extends Component {
+export default class SignUpScreen extends Component {
   constructor(props){
   super(props);
 
@@ -46,8 +46,26 @@ handleSubmit = () => {///??/??
   })
 
   // const url = 'https://spotholes-casuru.c9users.io/api/v1/accounts/';
-  const url = 'http://34.204.0.81/api/users';
+  const url = 'http://23.96.0.243:3000/api/users';
   const value = this._form.getValue();
+
+  console.log(value);
+
+  //sets the username and password of the current user so that you can use the app throughout
+  global.currentUser.setUserName(value.username);
+  global.currentUser.setPassword(value.password);
+
+  //sets authenticating to false so that the server does not keep on authenticating
+  this.setState({
+    authenticating:false
+  })
+
+  //navigates to the homeSocial screen
+  this.props.navigation.navigate("homeSocial");
+
+  //used to post the user to the database so that one can do all of the things in the
+  //app
+  /*
   return fetch(url, {
     method:"POST",
     headers: {
@@ -62,11 +80,13 @@ handleSubmit = () => {///??/??
         authenticating:false
       })
     });
+    */
+
 }
 
 
   render() {
-     const { navigate } = this.props.navigation;//?
+     //const { navigate } = this.props.navigation;//?
 
     return (
       <View style={styles.container}>

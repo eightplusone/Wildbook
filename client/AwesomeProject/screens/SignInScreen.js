@@ -25,7 +25,7 @@ const {
 } = FBSDK;
 
 
-export default class CameraScreen extends Component {
+export default class SignInScreen extends Component {
   constructor(props){
       super(props);
 
@@ -38,15 +38,29 @@ static navigationOptions = ({ navigation }) => ({});//?
 
 handleSubmit = () => {//????
 
+  //about to authenticate info, so set authenticating to true
   this.setState({
     authenticating:"true"
   })
 
   // const url = 'https://spotholes-casuru.c9users.io/api/v1/auth/token/'
-    const url = 'http://34.204.0.81/api/users';
+  const url = 'http://23.96.0.243:3000/api/users';
   const value = this._form.getValue();
-  console.log(value);
-  return fetch(url, {
+  //sets the username and password of the current user so that you can use the app throughout
+  global.currentUser.setUserName(value.username);
+  global.currentUser.setPassword(value.password);
+
+  //sets authenticating to false so that the server does not keep on authenticating
+  this.setState({
+    authenticating:"false"
+  });
+
+  //navigates to the homeSocial screen
+  this.props.navigation.navigate("homeSocial");
+
+  //does the server thing
+/*
+ return fetch(url, {
     method:"POST",
     headers: {
       'Accept': 'application/json',
@@ -57,19 +71,19 @@ handleSubmit = () => {//????
     .then(async(responseJson) => {
     //  if("token" in responseJson){
     //    await AsyncStorage.setItem("@spotholesAuthToken", responseJson["token"]);
-        this.props.navigation.navigate("homeSocial");
+        this.props.navigation.navigate("homeTrip");
       //}
       this.setState({
         authenticating:"false"
       });
 
       console.log(responseJson);
-    });
+    });*/
+
 }
 
   render() {
-    const { navigate } = this.props.navigation;//?
-
+    //const { navigate } = this.props.navigation;//?
         return (
           <View style={styles.container}>
             <Form

@@ -28,6 +28,7 @@ export default class HomeTripScreen extends Component {
 
 _onPressButton = () =>
 {
+   console.log(global.currentUser.getUserName());
    this.props.navigation.navigate('camera');
 }
 
@@ -45,14 +46,14 @@ _onPressButton = () =>
    });
 
 //data
-      return fetch('http://34.204.0.81/api/images')
+      return fetch('http://23.96.0.243:3000/api/images')
        .then((response) => response.json())
        .then((responseJson) => {
 
          let markers = [...this.state.markers];
          markers = responseJson;
          this.setState({ markers });
-         console.log(responseJson);
+
 
          // this.setState({
          //   isLoading: false,

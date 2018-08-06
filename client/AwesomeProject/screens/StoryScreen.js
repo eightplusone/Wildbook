@@ -18,7 +18,7 @@ export default class HomeTripScreen extends Component {
 
   componentDidMount(){
     //&&&data
-    return fetch('http://34.204.0.81/api/images')
+    return fetch('http://23.96.0.243:3000/api/images')
     .then((response) => response.json())
     .then((responseJson) => {
       this.setState({
