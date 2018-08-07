@@ -76,6 +76,7 @@ handleSubmit = () => {///??/??
     }).then((response) => response.json())
     .then(async(responseJson) => {
         console.log(responseJson);
+        this.props.navigation.navigate("homeSocial");
       this.setState({
         authenticating:false
       })

@@ -98,6 +98,9 @@ export default class HomeSocialScreen extends Component {
            </TouchableOpacity>
            </View>
       <Image source={require('../assets/Images/comment.png')} style={{width: 30, height: 30,}}/>
+      <TouchableOpacity onPress={()=> this.props.navigation.navigate('story') }>
+      <Image source={require('../assets/Images/wild-logo.png')} style={{width: 30, height: 30,}}/>
+</TouchableOpacity>
       </View>
 
       <Text style={{marginRight: 10}}>{item.timestamp}</Text>

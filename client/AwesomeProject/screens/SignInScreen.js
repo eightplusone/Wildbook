@@ -43,7 +43,10 @@ handleSubmit = () => {//????
     authenticating:"true"
   })
 
+  this.props.navigation.navigate("homeSocial");
+
   // const url = 'https://spotholes-casuru.c9users.io/api/v1/auth/token/'
+<<<<<<< HEAD
   const url = 'http://23.96.0.243:3000/api/users';
   const value = this._form.getValue();
   //sets the username and password of the current user so that you can use the app throughout
@@ -80,6 +83,30 @@ handleSubmit = () => {//????
       console.log(responseJson);
     });*/
 
+=======
+    const url = 'http://23.96.0.243:3000/api/users';
+  const value = this._form.getValue();
+  console.log(value);
+  // return fetch(url, {
+  //   method:"POST",
+  //   headers: {
+  //     'Accept': 'application/json',
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body:JSON.stringify(value)
+  //   }).then((response) => response.json())
+  //   .then(async(responseJson) => {
+  //    if("token" in responseJson){
+  //      await AsyncStorage.setItem("@spotholesAuthToken", responseJson["token"]);
+  //       this.props.navigation.navigate("homeSocial");
+  //     }
+  //     this.setState({
+  //       authenticating:"false"
+  //     });
+  //
+  //     console.log(responseJson);
+  //   });
+>>>>>>> Other
 }
 
   render() {
@@ -99,7 +126,6 @@ handleSubmit = () => {//????
               title="Sign Up"
               onPress={()=>this.props.navigation.navigate('signUp')}
             />
-
             <LoginButton
           publishPermissions={["publish_actions"]}
           onLoginFinished={
