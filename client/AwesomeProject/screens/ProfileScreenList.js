@@ -19,11 +19,7 @@ export default class HomeTripScreen extends Component {
   componentDidMount(){
     //&&&data
     // return fetch('http://23.96.0.243:3000/api/users/user1')
-<<<<<<< HEAD
-    // .then((response) =>23.96.0.243:3000son())
-=======
     // .then((response) => response.json())
->>>>>>> Other
     // .then((responseJson) => {
     //   this.setState({
     //              let posts = [...this.state.posts];

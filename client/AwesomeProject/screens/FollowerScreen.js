@@ -4,11 +4,7 @@ import { Header} from 'react-native-elements';
 import { StackNavigator} from 'react-navigation';
 import User from 'AwesomeProject/User.js';
 
-<<<<<<< HEAD
 //USES FOLLOWER MAP AS WELL AS INDIVIDUALUSERS
-=======
-//JUST USES INDIVIDUAL USERS
->>>>>>> Other
 
 export default class Follower extends Component
 {
@@ -18,10 +14,7 @@ export default class Follower extends Component
 	//the individualUsers will be used when showing the different users using the flatlist
 	state = {
 		followingArray: [],
-<<<<<<< HEAD
 		followerMap: new Map(),
-=======
->>>>>>> Other
 		individualUsers: [],
 	}
 
@@ -55,7 +48,6 @@ export default class Follower extends Component
 						.then((otherResponse) => otherResponse.json())
 						.then((otherResponseJson) => {
 
-<<<<<<< HEAD
 							//creates a map that has the username as the key and
 							//an User object with the userIcon, userName, and following status
 							//instantiates the things from the state so that the state changes
@@ -63,16 +55,11 @@ export default class Follower extends Component
 							var followerMap = this.state.followerMap;
 							var individualUsers = [...this.state.individualUsers];
 							var followingArray = [...this.state.followingArray];
-=======
-							//instantiates the individualUsers array which will be used in the FlatList
-							var individualUsers = [...this.state.individualUsers];
->>>>>>> Other
 
 							for(var i = 0; i < otherResponseJson[0].followers.length; i++) {
 								//populates the user object, first userIcon, then userName, then following value
 								var user = new User({userIcon: require('../assets/Images/Female-Avatar.png'), userName: otherResponseJson[0].followers[i], followingValue: this.areYouFollowing(otherResponseJson[0].followers[i])});
 
-<<<<<<< HEAD
 								//sets the username as the key and the User object as the value
 								followerMap.set(otherResponseJson[0].followers[i], user);
 							}
@@ -88,25 +75,12 @@ export default class Follower extends Component
 							//sets the state of the hashmap and individualUsers array
 							this.setState({
 								followerMap, individualUsers
-=======
-								//gives each element in the individualUsers array a user from the
-								//follower array in the database
-								individualUsers[i] = user;
-							}
-
-							//sets the state of the hashmap and individualUsers array
-							this.setState({
-							 individualUsers
->>>>>>> Other
 							}, function(){
 							});
 							console.log(otherResponseJson);
 						})
-<<<<<<< HEAD
-						.catch((error) =>{
-=======
+
 						.catch((error) => {
->>>>>>> Other
 							console.error(error);
 						});
 					//goes with the following array responseJson
@@ -128,11 +102,6 @@ export default class Follower extends Component
 	//if you are follow or following the user
 	areYouFollowing = (followerArrayUser) => {
 		for(var i = 0; i < this.state.followingArray.length; i++) {
-<<<<<<< HEAD
-			console.log('following', this.state.followingArray[i]);
-			console.log('user', followerArrayUser);
-=======
->>>>>>> Other
 			if(this.state.followingArray[i] === followerArrayUser) {
 				//if you are following the follower, show following
 				return true;
@@ -156,13 +125,9 @@ export default class Follower extends Component
 
 		//gets the follower hashmap, individualUsers array, and the followingArray
 		//from the state
-<<<<<<< HEAD
 		var followerMap = this.state.followerMap;
 		var individualUsers = [...this.state.individualUsers];
 		var followingArray = [...this.state.followingArray];
-=======
-		var individualUsers = [...this.state.individualUsers];
->>>>>>> Other
 
 		//unfollows the follower
 		//sets the following value to false because you are not following the user anymore
@@ -170,32 +135,22 @@ export default class Follower extends Component
 		//flatlist itself
 		if(user.getFollowingValue() === true) {
 			individualUsers[index].setFollowingValue(false);
-<<<<<<< HEAD
 			followerMap.set(user.getUserName(), user.setFollowingValue(false));
 			user.setFollowingValue(false);
-=======
->>>>>>> Other
 			this.unfollowUser(user);
 		}
 		//follows the follower
 		//sets the following value to true because you are now following the user
 		else {
 			individualUsers[index].setFollowingValue(true);
-<<<<<<< HEAD
 			followerMap.set(user.getUserName(), user.setFollowingValue(true));
 			user.setFollowingValue(true);
-=======
->>>>>>> Other
 			this.followUser(user);
 		}
 
 		//sets the state of the follower hashmap, individualUsers and followingArray
 		//arrays for later use
-<<<<<<< HEAD
 		this.setState({followerMap, individualUsers, followingArray});
-=======
-		this.setState({individualUsers});
->>>>>>> Other
 	}
 	//end _changeToFollowOrFollowing()
 	//****************************************************************************
@@ -208,10 +163,7 @@ export default class Follower extends Component
 	//efficency
 	componentWillUnmount = () => {
 		delete this.state.followingArray;
-<<<<<<< HEAD
 		delete this.state.followerMap;
-=======
->>>>>>> Other
 		delete this.state.individualUsers;
 	}
 	//end componentWillUnmount()

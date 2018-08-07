@@ -17,21 +17,7 @@ export default class HomeTripScreen extends Component {
   }
 
   componentDidMount(){
-<<<<<<< HEAD
-    //&&&data
-    return fetch('http://23.96.0.243:3000/api/images')
-    .then((response) => response.json())
-    .then((responseJson) => {
-      this.setState({
-        isLoading: false,
-        dataSource: responseJson,
-      }, function(){
-      });
-    })
-    .catch((error) =>{
-      console.error(error);
-    });
-=======
+
     return fetch('http://23.96.0.243:3000/api/images')
      .then((response) => response.json())
      .then((responseJson) => {
@@ -51,7 +37,6 @@ export default class HomeTripScreen extends Component {
      .catch((error) =>{
        console.error(error);
      });
->>>>>>> Other
   }
 
   render() {
@@ -76,20 +61,17 @@ export default class HomeTripScreen extends Component {
       <View style={{flex: 1, paddingTop:20 }}>
   <ScrollView horizontal={true}>
 
-<<<<<<< HEAD
           <View>
             <Image source = {{ uri: item.url }} style={{width: 50, height: 50}}/>
           </View>
           }
           keyExtractor={(item, index) => index}
         />
-=======
       {this.state.storyImages.map(storyImage => (
                         <Image style={styles.storyImage} key={storyImage.id} source={{ uri: storyImage.url }} onLoad={() => this.forceUpdate()} />
 
                     ))}
   </ScrollView>
->>>>>>> Other
       </View>
 
       <Text> Species Found In This Story  </Text>

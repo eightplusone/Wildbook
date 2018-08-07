@@ -10,7 +10,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { StackNavigator } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation';
 
-import HomeSocialScreen from './screens/HomeSocialScreen';
 import HomeTripScreen from './screens/HomeTripScreen';
 import HomeSocialScreen from './screens/HomeSocialScreen'; //did not have this before so I added it
 import MainTabNavigator from './Navigation/MainTabNavigator';
@@ -38,11 +37,7 @@ YellowBox.ignoreWarnings(['Warning: isMounted(...) is deprecated', 'Module RCTIm
 const App = StackNavigator(
    {
      homeTrip: { screen: HomeTripScreen},
-<<<<<<< HEAD
-     homeSocial: {screen: HomeSocialScreen},
-=======
      homeSocial: { screen: HomeSocialScreen},
->>>>>>> Other
      camera: { screen: CameraScreen },
      switchHome: {screen: SwitchHomeScreen},
      auth: {screen: AuthScreen},

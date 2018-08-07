@@ -4,11 +4,7 @@ import { Header} from 'react-native-elements';
 import { StackNavigator} from 'react-navigation';
 import User from 'AwesomeProject/User.js';
 
-<<<<<<< HEAD
 //USES FOLLOWING MAP AS WELL AS INDIVIDUAL USERS
-=======
-//JUST USES THE INDIVIDUAL USERS ARRAY
->>>>>>> Other
 
 //shows the users that you are following
 export default class Following extends Component
@@ -17,10 +13,7 @@ export default class Following extends Component
 	//and the userIcon and userName as the values
 	//individualUsers is created to utilize the flatlist and display data
 	state = {
-<<<<<<< HEAD
 		followingMap: new Map(),
-=======
->>>>>>> Other
 		individualUsers: [],
 	}
 
@@ -41,7 +34,6 @@ export default class Following extends Component
 		.then((responseJson) => {
 
 		//initializes the followingMap and the individualUsers array to what it is in the state
-<<<<<<< HEAD
 		var followingMap = this.state.followingMap;
 		var individualUsers = [...this.state.individualUsers];
 
@@ -75,31 +67,6 @@ export default class Following extends Component
 		.catch((error) =>{
 			console.error(error);
 		});
-=======
-		var individualUsers = [...this.state.individualUsers];
-
-		for(var i = 0; i < responseJson[0].following_users.length; i++) {
-			var user = new User({userIcon: require('../assets/Images/Female-Avatar.png'),
-			userName: responseJson[0].following_users[i]});
-
-			//gives each element in the individualUsers array a user from the
-			//follower array in the database
-			individualUsers[i] = user;
-		}
-
-		//sets the state of the followingMap and individualUsers so that they can
-		//be used later
-		this.setState({
-			isLoading: false,
-			individualUsers,
-		}, function(){
-		});
-	 console.log(responseJson);
-	})
-	.catch((error) =>{
-		console.error(error);
-	});
->>>>>>> Other
 	}
 	//end componentDidMount()
 	//****************************************************************************
@@ -111,7 +78,7 @@ export default class Following extends Component
 	//won't be using the things in the state in other screens, may increase
 	//efficency
 	componentWillUnmount = () => {
-		//delete this.state.followingMap;
+		delete this.state.followingMap;
 		delete this.state.individualUsers;
 	}
 	//end componentWillUnmount()
