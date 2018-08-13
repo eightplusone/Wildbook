@@ -22,6 +22,8 @@ import CameraRollScreen from './screens/CameraRollScreen';
 import StoryScreen from './screens/StoryScreen';
 import FollowerScreen from './screens/FollowerScreen';
 import FollowingScreen from './screens/FollowingScreen';
+import SearchScreenNavigator from './screens/SearchScreenNavigator';
+import SettingsScreen from './screens/SettingsScreen';
 
 
 ////warning ignoring
@@ -48,6 +50,8 @@ const App = StackNavigator(
      story: {screen: StoryScreen},
      follower: {screen: FollowerScreen},
      following: {screen: FollowingScreen},
+     searchScreenNavigator: {screen: SearchScreenNavigator},
+     settings: {screen: SettingsScreen},
    },
    {
      initialRouteName: 'homeTrip',

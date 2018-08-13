@@ -58,7 +58,6 @@ export default class Following extends Component
 			//be used later
 			this.setState({
 				followingMap,
-				isLoading: false,
 				individualUsers,
 			}, function(){
 			});

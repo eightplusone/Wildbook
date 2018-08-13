@@ -9,14 +9,14 @@ import Fontawesomeicons from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { StackNavigator} from 'react-navigation';
 
-export default class SettingsScreen extends React.Component {
+export default class ProfileScreenMap extends Component {
   render() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>Home</Text>
         <Button
           title="Go to Settings"
-          onPress={() => this.props.navigation.navigate('logIn')}
+          onPress={() => this.props.navigation.navigate('settings')}
         />
         <Button
           title="Go to Details"

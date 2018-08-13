@@ -9,7 +9,7 @@ import Fontawesomeicons from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {StackNavigator} from 'react-navigation';
 
-export default class CameraScreen extends Component {//?????
+export default class SwitchScreen extends Component {//?????
 
   async authenticateOrReroute(){
 
@@ -17,7 +17,8 @@ export default class CameraScreen extends Component {//?????
     console.log(authToken);
     if (authToken == null){
       this.props.navigation.navigate('auth');
-    } else {
+    }
+    else {
       this.props.navigation.navigate('homeSocial');
     }
   }

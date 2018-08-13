@@ -16,11 +16,11 @@ export default class HomeScreen extends React.Component {
         <Text>Home</Text>
         <Button
           title="Go to Settings"
-          onPress={() => this.props.navigation.navigate('logIn')}
+          onPress={() => this.props.navigation.navigate('signIn')}
         />
         <Button
           title="Go to Details"
-          onPress={() => this.props.navigation.navigate('logIn')}
+          onPress={() => this.props.navigation.navigate('singIn')}
         />
       </View>
     );

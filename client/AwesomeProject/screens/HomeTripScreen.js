@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Alert, Button, FlatList, ActivityIndicator,View, Text, StyleSheet, Dimensions, Image, TouchableHighlight, ScrollView} from 'react-native';
+import {Alert, Button, FlatList, Keyboard, ActivityIndicator,View, Text, StyleSheet, Dimensions, Image, TouchableHighlight, ScrollView} from 'react-native';
 import Camera from 'react-native-camera';
 import MapView , {Marker} from 'react-native-maps';
 import { Header, SearchBar } from 'react-native-elements';
@@ -182,6 +182,10 @@ _renderScroll= () => {
 		navigator.geolocation.clearWatch(this.watchID);
 	}
 
+  onSearchBarPress() {
+    this.props.navigation.navigate('searchScreenNavigator');
+  }
+
   render() {
     // if(this.state.isLoading){
     //   return(
@@ -233,12 +237,12 @@ rightComponent={{ icon: 'notifications', onPress: () => {this.props.navigation.n
 
     {this._renderScroll()}
 
-    <SearchBar
-  showLoading
-  lightTheme
-  platform="android"
-  placeholder='Search'/>
-
+    <TouchableHighlight
+      onPress = {() => this.props.navigation.navigate('searchScreenNavigator')}
+      style = {styles.button}
+    >
+       <Text> Search </Text>
+    </TouchableHighlight>
 
     <TouchableHighlight
            style={styles.button}

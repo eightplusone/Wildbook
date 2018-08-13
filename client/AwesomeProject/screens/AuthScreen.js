@@ -18,7 +18,12 @@ static navigationOptions = ({ navigation }) => ({});//?
         return (
           <View>
 
-          <Image source={require('../assets/Images/wild-logo.png')} style={{ width: 200, height: 200 , justifyContent: 'center', alignItems: 'center'}}/>
+          <View style = {{justifyContent: 'center', alignItems: 'center'}}>
+          <Image source={require('../assets/Images/wild-logo.png')} style={{width: 200, height: 200,}}/>
+
+          <Text style = {{fontSize: 15}}> Wildbook </Text>
+          </View>
+          
           <Button
          title="Log In"
          onPress={()=>this.props.navigation.navigate('signIn')}

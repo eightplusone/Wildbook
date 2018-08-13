@@ -137,7 +137,7 @@ export default class nav extends Component {
   }
 }
 const SimpleApp = StackNavigator({
-  Home: { screen: GParentScene, navigationOptions:{ title:'Profile',
+  Home: { screen: GParentScene, navigationOptions:{ title:'Profile',  //creates the title of the page
    // header:{ visible:false }
  } },
 });
